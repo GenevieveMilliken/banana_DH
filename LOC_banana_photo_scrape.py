@@ -1,10 +1,9 @@
-# WIP script 
-# scrapes 34 images of laborers and bananas at the Port of New Orleans from LOC Photo Collection
+# scrapes about 30 images of laborers and bananas at the Port of New Orleans from LOC Photo Collection
 
 from bs4 import BeautifulSoup
 import requests
 import json 
-from time import sleep
+import time
 
 all_my_data = []
 
@@ -19,40 +18,62 @@ for pages in range(0,3):
 
 	for item in items: 
 
-	# 	# my_data = {
-	# 	# 	"digital_object_URL" : None,
-	# 	# 	"image_URL": None, 
-	# 	# 	"caption": None,
-	# 	# 	"date": None,
-	# 	# 	"LC_Call_Number": None,
-	# 	# }
+		my_data = {
+			"digital_object_URL" : None,
+			"LOC_Call_Number": None,
+			"image_URL": None, 
+			"caption": None,
+			"date": None,
+		}
 
 		print("--------------")
 
 		digital_object_URL = item.find('a')
 		abs_url = digital_object_URL['href']
-		# my_data['digital_object_URL'] = abs_url
-		print(abs_url)
+		my_data['digital_object_URL'] = abs_url
+		# print(abs_url)
 
 		caption = digital_object_URL.text
-		# my_data['caption'] = caption
-		print(caption)
+		my_data['caption'] = caption
+		# print(caption)
 
 		object_page = requests.get(abs_url)
 		object_html = object_page.text
 		object_soup = BeautifulSoup(object_html, "html.parser")
 
-		# image_URL = object_soup.find
-
-	# 	# date = object_soup.find
-
 		LC_Call_Number = object_soup.find("div", attrs = {'id': 'onsite'})
 		LC_Call_Number = LC_Call_Number.find('li')
 		LC_Call_Number = LC_Call_Number.text
 		LC_Call_Number = LC_Call_Number.replace("Call Number:", "")
-		print(LC_Call_Number)
+		LC_Call_Number = LC_Call_Number.replace("\n", "")
+		LC_Call_Number = LC_Call_Number.replace("\t", "")
+		my_data['LOC_Call_Number'] = LC_Call_Number
+		# print(LC_Call_Number)
 
-		time.sleep(5)
+		try: 
+			image_URL = object_soup.find_all("link", attrs = {'type': 'image/jpg'})
+			image_URL = image_URL[1]
+			image_URL = image_URL['href']
+			image_URL = image_URL.replace("//","")
+			my_data['image_URL'] = image_URL
+			# print(image_URL)
+		except IndexError: 
+			pass 
+
+		date = object_soup.find("meta", attrs= {'name': 'dc.date'})
+		date = date['content']
+		my_data['date'] = date
+		# print(date)
+		
+		time.sleep(1)
+
+		all_my_data.append(my_data)
+
+with open('LOC_Bananas_PortNOLA.json', 'w') as file_object:
+	json.dump(all_my_data, file_object, indent=2)
+	print("JSON file is Ready")
+
+	
 
 
 
