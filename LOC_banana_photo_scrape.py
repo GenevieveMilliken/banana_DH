@@ -69,7 +69,7 @@ for pages in range(0,3):
 
 		all_my_data.append(my_data)
 
-with open('LOC_Bananas_PortNOLA.json', 'w') as file_object:
+with open('LOC_Bananas_Port_NOLA.json', 'w') as file_object:
 	json.dump(all_my_data, file_object, indent=2)
 	print("JSON file is Ready")
 
